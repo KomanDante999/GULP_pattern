@@ -18,8 +18,9 @@
   },
   "homepage": "https://github.com/KomanDante999/GULP_pattern#readme",
   "devDependencies": {
+    "del": "^6.0.0",
     "gulp": "^4.0.2",
-    "gulp-sass": "^5.1.0",
-    "sass": "^1.58.3"
+    "gulp-less": "^5.0.0",
+    "gulp-sass": "^5.1.0"
   }
 }

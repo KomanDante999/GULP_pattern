@@ -1,14 +1,15 @@
 const { src, dest, series, watch, parallel } = require('gulp')
 const less = require('gulp-less');
-const del = require('del');
 const cleanCSS = require('gulp-clean-css');
+const autoprefixer = require('gulp-autoprefixer')
 const rename = require('gulp-rename');
 const concat = require('gulp-concat')
-const browserSync = require('browser-sync').create()
 const babel = require('gulp-babel')
 const uglify = require('gulp-uglify-es').default
 const notify = require('gulp-notify')
 const sourcemaps = require('gulp-sourcemaps')
+const del = require('del');
+const browserSync = require('browser-sync').create()
 
 const paths = {
   html: {
@@ -39,11 +40,13 @@ const html = ()=> {
 
 const styles = ()=> {
   return src(paths.styles.src)
+  .pipe(sourcemaps.init())
   .pipe(less())
   .pipe(rename({
     basename: 'main',
     suffix: '.min'
   }))
+  .pipe(sourcemaps.write('.'))
   .pipe(dest(paths.styles.dest))
   .pipe(browserSync.stream())
 }
@@ -51,7 +54,10 @@ const styles = ()=> {
 const stylesProd = ()=> {
   return src(paths.styles.src)
   .pipe(less())
-  .pipe(cleanCSS())
+  .pipe(autoprefixer({
+    cascade: false
+  }))
+  .pipe(cleanCSS({level: 2}))
   .pipe(rename({
     basename: 'main',
     suffix: '.min'
@@ -64,7 +70,7 @@ const scripts = ()=> {
   return src(paths.scripts.src)
   .pipe(sourcemaps.init())
   .pipe(concat('main.min.js'))
-  .pipe(sourcemaps.write())
+  .pipe(sourcemaps.write('.'))
   .pipe(dest(paths.scripts.dest))
   .pipe(browserSync.stream())
 }
@@ -105,17 +111,12 @@ exports.del = cleanNode;
 exports.default = build
 exports.prod = prodaction
 
-// const autoprefixer = require('gulp-autoprefixer')
+//
 // const svgSprite = require('gulp-svg-sprite')
 // const image = require('gulp-image')
 // const notify = require('gulp-notify')
 //
 //
-
-// const clean = () => {
-//   return del('dist')
-// }
-
 // const resources = () => {
 //   return src('src/resources/**')
 //   .pipe(dest('dist'))

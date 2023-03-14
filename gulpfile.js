@@ -6,6 +6,9 @@ const rename = require('gulp-rename');
 const concat = require('gulp-concat')
 const browserSync = require('browser-sync').create()
 const babel = require('gulp-babel')
+const uglify = require('gulp-uglify-es').default
+const notify = require('gulp-notify')
+const sourcemaps = require('gulp-sourcemaps')
 
 const paths = {
   html: {
@@ -42,6 +45,7 @@ const styles = ()=> {
     suffix: '.min'
   }))
   .pipe(dest(paths.styles.dest))
+  .pipe(browserSync.stream())
 }
 
 const stylesProd = ()=> {
@@ -53,30 +57,30 @@ const stylesProd = ()=> {
     suffix: '.min'
   }))
   .pipe(dest(paths.styles.dest))
+  .pipe(browserSync.stream())
 }
 
 const scripts = ()=> {
   return src(paths.scripts.src)
-  .pipe(less())
-  .pipe(concat('main.js'))
-  .pipe(rename({
-    basename: 'main',
-    suffix: '.min'
-  }))
+  .pipe(sourcemaps.init())
+  .pipe(concat('main.min.js'))
+  .pipe(sourcemaps.write())
   .pipe(dest(paths.scripts.dest))
+  .pipe(browserSync.stream())
 }
 
 const scriptsProd = ()=> {
   return src(paths.scripts.src)
-  .pipe(less())
-  .pipe(concat('main.js'))
-  .pipe(rename({
-    basename: 'main',
-    suffix: '.min'
+  .pipe(babel({
+    presets: ['@babel/env']
   }))
+  .pipe(concat('main.min.js'))
+  .pipe(uglify({
+    toplevel: true
+  }).on('error', notify.onError()))
   .pipe(dest(paths.scripts.dest))
+  .pipe(browserSync.stream())
 }
-
 
 
 const watchFailes = () => {
@@ -87,13 +91,13 @@ const watchFailes = () => {
   })
 }
 
-const build = series(clean, html, styles, scripts, watchFailes)
-const prodaction = series(clean, html, stylesProd, scriptsProd, watchFailes)
+const build = series(clean, parallel(html, styles, scripts), watchFailes)
+const prodaction = series(clean, parallel(html, stylesProd, scriptsProd), watchFailes)
 
 
 watch(paths.styles.src, styles)
 watch(paths.html.src, html)
-watch(paths.scripts.src, styles)
+watch(paths.scripts.src, scripts)
 
 exports.clean = clean;
 exports.del = cleanNode;
@@ -101,17 +105,11 @@ exports.del = cleanNode;
 exports.default = build
 exports.prod = prodaction
 
-// const { src, dest, series, watch } = require('gulp')
-//
 // const autoprefixer = require('gulp-autoprefixer')
-// const cleanCss = require('gulp-clean-css')
 // const svgSprite = require('gulp-svg-sprite')
 // const image = require('gulp-image')
-// const uglify = require('gulp-uglify-es').default
-//
-// const del = require('del')
 // const notify = require('gulp-notify')
-// const sourcemaps = require('gulp-sourcemaps')
+//
 //
 
 // const clean = () => {
